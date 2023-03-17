@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ abstract public class BaseGameGalleryActivity extends AppCompatActivity
             editor.apply();
             NLog.i(TAG, "Reinit DB " + androidVersion);
         }
-        reloadGames = true;
+        reloadGames = dbHelper.countObjsInDb(GameDescription.class, "") >= 0;
     }
 
     @Override
@@ -78,6 +79,15 @@ abstract public class BaseGameGalleryActivity extends AppCompatActivity
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     protected void reloadGames(boolean searchNew, File selectedFolder) {
+        if (romsFinder == null) {
+            reloadGames = false;
+            reloading = searchNew;
+            romsFinder = new RomsFinder(exts, inZipExts, this, this, searchNew, selectedFolder);
+            romsFinder.start();
+        }
+    }
+
+    protected void reloadGames(boolean searchNew, DocumentFile selectedFolder) {
         if (romsFinder == null) {
             reloadGames = false;
             reloading = searchNew;

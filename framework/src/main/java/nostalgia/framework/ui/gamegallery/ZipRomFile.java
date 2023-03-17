@@ -1,5 +1,7 @@
 package nostalgia.framework.ui.gamegallery;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -27,5 +29,9 @@ public class ZipRomFile {
 
     public static String computeZipHash(File zipFile) {
         return zipFile.getAbsolutePath().concat("-" + zipFile.length()).hashCode() + "";
+    }
+
+    public static String computeZipHash(DocumentFile zipFile) {
+        return zipFile.getUri().getPath().concat("-" + zipFile.length()).hashCode() + "";
     }
 }

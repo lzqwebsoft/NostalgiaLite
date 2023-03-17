@@ -2,6 +2,7 @@ package nostalgia.framework.ui.gamegallery;
 
 
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
 import java.io.Serializable;
@@ -52,6 +53,17 @@ public class GameDescription implements Serializable, Comparable<GameDescription
     public GameDescription(File file, String checksum) {
         name = file.getName();
         path = file.getAbsolutePath();
+        this.checksum = checksum;
+    }
+
+    public GameDescription(DocumentFile file) {
+        this(file, "");
+        checksum = EmuUtils.getMD5Checksum(file);
+    }
+
+    public GameDescription(DocumentFile file, String checksum) {
+        name = file.getName();
+        path = file.getUri().toString();
         this.checksum = checksum;
     }
 

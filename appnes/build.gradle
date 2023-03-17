@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
 
     signingConfigs {
         demokey {
@@ -14,10 +14,10 @@ android {
     defaultConfig {
         applicationId "nostalgia.appnes"
         minSdkVersion 15
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1401
         versionName "1.4.1"
-        resConfigs "zh"
+        resConfigs 'zh'
         ndk {
             abiFilters 'armeabi-v7a', 'x86', 'arm64-v8a'
         }
@@ -60,12 +60,16 @@ android {
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
-    lintOptions {
+    lint {
         abortOnError false
     }
+    namespace 'nostalgia.appnes'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':framework')
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.blankj:utilcode:1.30.7'
 }

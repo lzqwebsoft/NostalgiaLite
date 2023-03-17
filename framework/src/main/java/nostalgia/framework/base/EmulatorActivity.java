@@ -9,8 +9,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap.CompressFormat;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.view.Display;
@@ -243,6 +245,21 @@ public abstract class EmulatorActivity extends Activity
 
         if (needsBenchmark) {
             manager.setBenchmark(new Benchmark(EMULATION_BENCHMARK, 1000, benchmarkCallback));
+        }
+    }
+
+    public int openContentUri(String uriString, String mode) {
+        try {
+            Uri uri = Uri.parse(uriString);
+            ParcelFileDescriptor filePfd = getContentResolver().openFileDescriptor(uri, mode);
+            if (filePfd == null) {
+                NLog.e(TAG, "Failed to get file descriptor for " + uriString);
+                return -1;
+            }
+            return filePfd.detachFd();  // Take ownership of the fd.
+        } catch (Exception e) {
+            NLog.e(TAG, "openContentUri exception: " + e.toString());
+            return -1;
         }
     }
 

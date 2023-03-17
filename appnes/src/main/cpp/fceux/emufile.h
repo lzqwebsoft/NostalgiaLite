@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <vector>
 #include <algorithm>
 #include <string>
+#include "Bridge.h"
 
 class EMUFILE {
 protected:

@@ -157,3 +157,58 @@ BRIDGE_PACKAGE(stop)(JNIEnv *env, jobject obj) {
 }
 
 }
+
+static JavaVM *gJvm = nullptr;
+
+static jmethodID openContentUri;
+
+static jobject nativeActivity;
+static jobject g_nativeActivity;
+
+JNIEnv *getEnv() {
+    JNIEnv *env;
+    int status = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
+//    _assert_msg_(status >= 0, "'%s': Can only call getEnv if you've attached the thread already!", GetCurrentThreadName());
+    return env;
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
+    gJvm = pjvm;  // cache the JavaVM pointer
+    auto env = getEnv();
+    return JNI_VERSION_1_6;
+}
+
+void Android_StorageSetNativeActivity(jobject nativeActivity) {
+    g_nativeActivity = nativeActivity;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_nostalgia_appnes_NesEmulatorActivity_registerCallbacks(JNIEnv *env, jobject obj) {
+    nativeActivity = env->NewGlobalRef(obj);
+    openContentUri = env->GetMethodID(env->GetObjectClass(obj), "openContentUri", "(Ljava/lang/String;Ljava/lang/String;)I");
+    Android_StorageSetNativeActivity(nativeActivity);
+}
+
+
+int Android_OpenContentUriFd(const char *fname, const char *mode) {
+    if (!g_nativeActivity) {
+        return -1;
+    }
+    auto env = getEnv();
+    const char *modeStr = "";
+    if (strcmp(mode, "r") == 0 || strcmp(mode, "rb") == 0) {
+        modeStr = "r";
+    } else if (strcmp(mode, "w") == 0 || strcmp(mode, "wb") == 0) {
+        modeStr = "w";
+    } else if (strcmp(mode, "a") == 0 || strcmp(mode, "ab") == 0) {
+        modeStr = "wa";
+    } else {
+        modeStr = "rw";
+    }
+    jstring j_filename = env->NewStringUTF(fname);
+    jstring j_mode = env->NewStringUTF(modeStr);
+    // j_mode must be "r", "w", "wt", "wa", "rw" or "rwt".
+    int fd = env->CallIntMethod(g_nativeActivity, openContentUri, j_filename, j_mode);
+    return fd;
+}

@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="nostalgia.framework">
-
+    xmlns:tools="http://schemas.android.com/tools">
+    
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -21,6 +20,7 @@
 
         <activity
             android:name=".ui.SplashActivity"
+            android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -30,32 +30,39 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.gamegallery.SlotSelectionActivity" />
+        <activity
+            android:name=".ui.gamegallery.SlotSelectionActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.preferences.GamePreferenceActivity"
+            android:exported="false"
             android:label="@string/game_pref"
             android:theme="@style/PrefTheme" />
 
         <activity
             android:name=".ui.cheats.CheatsActivity"
+            android:exported="false"
             android:label="Cheats" />
 
-        <activity android:name=".base.OpenGLTestActivity" />
+        <activity
+            android:name=".base.OpenGLTestActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.preferences.AboutActivity"
+            android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".base.RestarterActivity"
             android:configChanges="orientation|screenSize"
+            android:exported="false"
             android:process=":restarter" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
-            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

@@ -1,5 +1,6 @@
 package nostalgia.framework.utils;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -15,9 +16,14 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.view.Display;
+
+import androidx.documentfile.provider.DocumentFile;
+
+import com.blankj.utilcode.util.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -54,6 +61,21 @@ public class EmuUtils {
     private EmuUtils() {
     }
 
+    public static boolean fileIsExists(String path) {
+        boolean isExists = false;
+        if (path.startsWith("content://")) {
+            try {
+                DocumentFile gameFile2 = DocumentFile.fromTreeUri(Utils.getApp(), Uri.parse(path));
+                isExists = gameFile2.exists();
+            } catch (Exception e) {
+            }
+        } else {
+            File gameFile = new File(path);
+            isExists = gameFile.exists();
+        }
+        return isExists;
+    }
+
     public static String stripExtension(String str) {
         if (str == null)
             return null;
@@ -67,6 +89,23 @@ public class EmuUtils {
         InputStream fis = null;
         try {
             fis = new FileInputStream(file);
+            return countMD5(fis);
+        } catch (IOException e) {
+            NLog.e(TAG, "", e);
+        } finally {
+            try {
+                if (fis != null)
+                    fis.close();
+            } catch (IOException ignored) {
+            }
+        }
+        return "";
+    }
+
+    public static String getMD5Checksum(DocumentFile file) {
+        InputStream fis = null;
+        try {
+            fis = Utils.getApp().getContentResolver().openInputStream(file.getUri());
             return countMD5(fis);
         } catch (IOException e) {
             NLog.e(TAG, "", e);
@@ -164,6 +203,24 @@ public class EmuUtils {
             zis.close();
             zipFile2.close();
             fos.close();
+        }
+    }
+
+    public static void extractFile(String zipFilePath, String entryName, File outputFile) throws IOException {
+        if (zipFilePath.startsWith("content://")) {
+            NLog.i(TAG, "extract " + entryName + " from " + zipFilePath + " to " + outputFile.getAbsolutePath());
+            InputStream zis = Utils.getApp().getContentResolver().openInputStream(Uri.parse(zipFilePath));
+            FileOutputStream fos = new FileOutputStream(outputFile);
+            byte[] buffer = new byte[20480];
+            int count;
+            while ((count = zis.read(buffer)) != -1) {
+                fos.write(buffer, 0, count);
+            }
+            zis.close();
+            fos.close();
+        } else {
+            File zipFile = new File(zipFilePath);
+            extractFile(zipFile, entryName, outputFile);
         }
     }
 

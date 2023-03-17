@@ -12,11 +12,16 @@ import nostalgia.framework.ui.preferences.PreferenceUtil;
 
 public class NesEmulatorActivity extends EmulatorActivity {
     private boolean isLastOfStack = false;
+
+    public native void registerCallbacks();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        registerCallbacks();
         isLastOfStack = checkLastStack();
     }
+
     String shader1 = "precision mediump float;"
             + "varying vec2 v_texCoord;"
             + "uniform sampler2D s_texture;"
@@ -55,8 +60,8 @@ public class NesEmulatorActivity extends EmulatorActivity {
         }
         return shader1;
     }
-    
-        @Override
+
+    @Override
     public void onBackPressed() {
         super.onBackPressed();
         if (isLastOfStack) {

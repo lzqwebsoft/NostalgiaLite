@@ -7,6 +7,11 @@ import android.graphics.Canvas;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.net.Uri;
+
+import androidx.documentfile.provider.DocumentFile;
+
+import com.blankj.utilcode.util.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -492,7 +497,13 @@ public abstract class JniEmulator implements Emulator {
             path = getLoadedGame().path;
         }
         if (!md5s.containsKey(path)) {
-            String md5 = EmuUtils.getMD5Checksum(new File(path));
+            String md5 = "";
+            if (path.startsWith("content://")) {
+                DocumentFile documentFile = DocumentFile.fromTreeUri(Utils.getApp(), Uri.parse(path));
+                md5 = EmuUtils.getMD5Checksum(documentFile);
+            } else {
+                md5 = EmuUtils.getMD5Checksum(new File(path));
+            }
             md5s.put(path, md5);
         }
         return md5s.get(path);

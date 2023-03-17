@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.widget.Toolbar;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -31,6 +33,7 @@ import nostalgia.framework.utils.DatabaseHelper;
 import nostalgia.framework.utils.DialogUtils;
 import nostalgia.framework.utils.EmuUtils;
 import nostalgia.framework.utils.NLog;
+import nostalgia.framework.utils.SPUtils;
 
 public abstract class GalleryActivity extends BaseGameGalleryActivity
         implements OnItemClickListener {
@@ -46,10 +49,13 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
     private boolean rotateAnim = false;
     private TabLayout mTabLayout;
 
+    private SPUtils spUtils;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dbHelper = new DatabaseHelper(this);
+        spUtils = new SPUtils(this);
         setContentView(R.layout.activity_gallery);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -89,7 +95,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
             startActivity(i);
             return true;
         } else if (itemId == R.id.gallery_menu_reload) {
-            reloadGames(true, null);
+            reloadGames(true, getSelectedROMFolder());
             return true;
         } else if (itemId == R.id.gallery_menu_exit) {
             finish();
@@ -107,7 +113,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
         adapter.notifyDataSetChanged();
         if (reloadGames && !importing) {
             boolean isDBEmpty = dbHelper.countObjsInDb(GameDescription.class, null) == 0;
-            reloadGames(isDBEmpty, null);
+            reloadGames(isDBEmpty, getSelectedROMFolder());
         }
     }
 
@@ -119,42 +125,50 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
 
     @Override
     public void onItemClick(GameDescription game) {
-        File gameFile = new File(game.path);
         NLog.i(TAG, "select " + game);
 
         if (game.isInArchive()) {
-            gameFile = new File(getExternalCacheDir(), game.checksum);
+            File gameFile = new File(getExternalCacheDir(), game.checksum);
             game.path = gameFile.getAbsolutePath();
             ZipRomFile zipRomFile = dbHelper.selectObjFromDb(ZipRomFile.class,
                     "WHERE _id=" + game.zipfile_id, false);
-            File zipFile = new File(zipRomFile.path);
+
             if (!gameFile.exists()) {
                 try {
-                    EmuUtils.extractFile(zipFile, game.name, gameFile);
+                    EmuUtils.extractFile(game.path, game.name, gameFile);
                 } catch (IOException e) {
                     NLog.e(TAG, "", e);
                 }
             }
         }
 
-        if (gameFile.exists()) {
+        if (EmuUtils.fileIsExists(game.path)) {
             game.lastGameTime = System.currentTimeMillis();
             game.runCount++;
             dbHelper.updateObjToDb(game, new String[]{"lastGameTime", "runCount"});
             onGameSelected(game, 0);
         } else {
-            NLog.w(TAG, "rom file:" + gameFile.getAbsolutePath() + " does not exist");
+            NLog.w(TAG, "rom file:" + game.path + " does not exist");
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setMessage(getString(R.string.gallery_rom_not_found))
                     .setTitle(R.string.error)
-                    .setPositiveButton(R.string.gallery_rom_not_found_reload, (dialog1, which)
-                            -> reloadGames(true, null))
+                    .setPositiveButton(R.string.gallery_rom_not_found_reload, (dialog1, which) -> reloadGames(true, getSelectedROMFolder()))
                     .setCancelable(false)
                     .create();
-            dialog.setOnDismissListener(dialog12 ->
-                    reloadGames(true, null));
+            dialog.setOnDismissListener(dialog12 -> reloadGames(true, getSelectedROMFolder()));
             dialog.show();
         }
+    }
+
+    private DocumentFile getSelectedROMFolder() {
+        DocumentFile rootDir = null;
+        try {
+            Uri rootPath = Uri.parse(spUtils.getString("ROM_ROOT_DIR", ""));
+            rootDir = DocumentFile.fromTreeUri(this, rootPath);
+        } catch (Exception e) {
+            NLog.e(TAG, "No root directory selected.");
+        }
+        return rootDir;
     }
 
     public boolean onGameSelected(GameDescription game, int slot) {
@@ -188,8 +202,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
             searchDialog.setIndeterminate(true);
             searchDialog.setProgressNumberFormat("");
             searchDialog.setProgressPercentFormat(null);
-            searchDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel),
-                    (dialog, which) -> stopRomsFinding());
+            searchDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel), (dialog, which) -> stopRomsFinding());
         }
         searchDialog.setMessage(getString(zipMode ?
                 R.string.gallery_zip_search_label
@@ -206,8 +219,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
             }
             if (showToast) {
                 if (count > 0) {
-                    Snackbar.make(pager, getString(R.string.gallery_count_of_found_games, count),
-                            Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    Snackbar.make(pager, getString(R.string.gallery_count_of_found_games, count), Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 }
             }
         });

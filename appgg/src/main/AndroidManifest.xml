@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nostalgia.appgg">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:name=".GGApplication"
@@ -9,6 +8,7 @@
 
         <activity
             android:name=".GGGalleryActivity"
+            android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -20,9 +20,11 @@
 
         <activity
             android:name=".GGEmulatorActivity"
+            android:exported="false"
             android:theme="@style/AppTheme.FullScreen" />
         <activity
             android:name="nostalgia.framework.ui.preferences.GeneralPreferenceActivity"
+            android:exported="false"
             android:label="@string/general_pref"
             android:theme="@style/PrefTheme">
             <intent-filter>
@@ -33,6 +35,7 @@
         </activity>
         <activity
             android:name="nostalgia.framework.ui.preferences.KeyboardSettingsActivity"
+            android:exported="false"
             android:label="@string/key_pref"
             android:theme="@style/PrefTheme">
             <intent-filter>
@@ -43,6 +46,7 @@
         </activity>
         <activity
             android:name="nostalgia.framework.ui.preferences.TouchControllerSettingsActivity"
+            android:exported="false"
             android:label="@string/game_pref"
             android:theme="@style/AppTheme.FullScreen">
             <intent-filter>
@@ -53,6 +57,7 @@
         </activity>
         <activity
             android:name="nostalgia.framework.ui.preferences.ScreenViewPortSettingsActivity"
+            android:exported="false"
             android:label="@string/game_pref"
             android:theme="@style/AppTheme.FullScreen">
             <intent-filter>
