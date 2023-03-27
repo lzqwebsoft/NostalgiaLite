@@ -65,7 +65,7 @@ public class EmuUtils {
         boolean isExists = false;
         if (path.startsWith("content://")) {
             try {
-                DocumentFile gameFile2 = DocumentFile.fromTreeUri(Utils.getApp(), Uri.parse(path));
+                DocumentFile gameFile2 = DocumentFile.fromSingleUri(Utils.getApp(), Uri.parse(path));
                 isExists = gameFile2.exists();
             } catch (Exception e) {
             }

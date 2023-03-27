@@ -135,7 +135,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
 
             if (!gameFile.exists()) {
                 try {
-                    EmuUtils.extractFile(game.path, game.name, gameFile);
+                    EmuUtils.extractFile(zipRomFile.path, game.name, gameFile);
                 } catch (IOException e) {
                     NLog.e(TAG, "", e);
                 }
@@ -164,7 +164,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
         DocumentFile rootDir = null;
         try {
             Uri rootPath = Uri.parse(spUtils.getString("ROM_ROOT_DIR", ""));
-            rootDir = DocumentFile.fromTreeUri(this, rootPath);
+            rootDir = DocumentFile.fromSingleUri(this, rootPath);
         } catch (Exception e) {
             NLog.e(TAG, "No root directory selected.");
         }

@@ -499,7 +499,7 @@ public abstract class JniEmulator implements Emulator {
         if (!md5s.containsKey(path)) {
             String md5 = "";
             if (path.startsWith("content://")) {
-                DocumentFile documentFile = DocumentFile.fromTreeUri(Utils.getApp(), Uri.parse(path));
+                DocumentFile documentFile = DocumentFile.fromSingleUri(Utils.getApp(), Uri.parse(path));
                 md5 = EmuUtils.getMD5Checksum(documentFile);
             } else {
                 md5 = EmuUtils.getMD5Checksum(new File(path));

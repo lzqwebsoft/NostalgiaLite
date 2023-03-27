@@ -179,7 +179,8 @@ public class RomsFinder extends Thread {
         NLog.i(TAG, "start");
         activity.runOnUiThread(() -> listener.onRomsFinderStart(searchNew));
         ArrayList<GameDescription> oldRoms = getAllGames(dbHelper);
-        oldRoms = removeNonExistRoms(oldRoms);
+        if (searchNew)
+            oldRoms = removeNonExistRoms(oldRoms);
         final ArrayList<GameDescription> roms = oldRoms;
         NLog.i(TAG, "old games " + oldRoms.size());
         activity.runOnUiThread(() -> listener.onRomsFinderFoundGamesInCache(roms));

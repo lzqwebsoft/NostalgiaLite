@@ -1,7 +1,10 @@
 package nostalgia.framework.base;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
+
+import androidx.documentfile.provider.DocumentFile;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,22 +20,41 @@ public class BatterySaveUtils {
     }
 
     public static void createSavFileCopyIfNeeded(Context context, String gameFilePath) {
-        File gameFile = new File(gameFilePath);
-        File batterySavFile =
-                new File(gameFile.getParent(), EmuUtils.stripExtension(gameFile.getName()) + ".sav");
-        if (!batterySavFile.exists()) {
-            return;
-        }
-        if (batterySavFile.canWrite()) {
-            return;
-        }
-        String sourceMD5 = EmuUtils.getMD5Checksum(batterySavFile);
-        if (needsRewrite(context, batterySavFile, sourceMD5)) {
-            File copyFile = new File(EmulatorUtils.getBaseDir(context), batterySavFile.getName());
-            try {
-                FileUtils.copyFile(batterySavFile, copyFile);
-                saveMD5Meta(context, batterySavFile, sourceMD5);
-            } catch (Exception ignored) {
+        if (gameFilePath.startsWith("content://")) {
+            DocumentFile gameFile = DocumentFile.fromSingleUri(context, Uri.parse(gameFilePath));
+            DocumentFile parentFile = gameFile.getParentFile();
+            if (parentFile == null || gameFile.getName() == null)
+                return;
+            DocumentFile batterySavFile = gameFile.getParentFile().findFile(gameFile.getName() + ".sav");
+            if (batterySavFile == null || !batterySavFile.exists() || batterySavFile.canWrite()) {
+                return;
+            }
+//            String sourceMD5 = EmuUtils.getMD5Checksum(batterySavFile);
+//            if (needsRewrite(context, batterySavFile, sourceMD5)) {
+//                File copyFile = new File(EmulatorUtils.getBaseDir(context), batterySavFile.getName());
+//                try {
+//                    FileUtils.copyFile(batterySavFile, copyFile);
+//                    saveMD5Meta(context, batterySavFile, sourceMD5);
+//                } catch (Exception ignored) {
+//                }
+//            }
+        } else {
+            File gameFile = new File(gameFilePath);
+            File batterySavFile = new File(gameFile.getParent(), EmuUtils.stripExtension(gameFile.getName()) + ".sav");
+            if (!batterySavFile.exists()) {
+                return;
+            }
+            if (batterySavFile.canWrite()) {
+                return;
+            }
+            String sourceMD5 = EmuUtils.getMD5Checksum(batterySavFile);
+            if (needsRewrite(context, batterySavFile, sourceMD5)) {
+                File copyFile = new File(EmulatorUtils.getBaseDir(context), batterySavFile.getName());
+                try {
+                    FileUtils.copyFile(batterySavFile, copyFile);
+                    saveMD5Meta(context, batterySavFile, sourceMD5);
+                } catch (Exception ignored) {
+                }
             }
         }
     }

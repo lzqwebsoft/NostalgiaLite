@@ -58,7 +58,7 @@ abstract public class BaseGameGalleryActivity extends AppCompatActivity
             editor.apply();
             NLog.i(TAG, "Reinit DB " + androidVersion);
         }
-        reloadGames = dbHelper.countObjsInDb(GameDescription.class, "") >= 0;
+        reloadGames = true;
     }
 
     @Override
