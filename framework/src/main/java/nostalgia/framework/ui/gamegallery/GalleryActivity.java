@@ -164,7 +164,7 @@ public abstract class GalleryActivity extends BaseGameGalleryActivity
         DocumentFile rootDir = null;
         try {
             Uri rootPath = Uri.parse(spUtils.getString("ROM_ROOT_DIR", ""));
-            rootDir = DocumentFile.fromSingleUri(this, rootPath);
+            rootDir = DocumentFile.fromTreeUri(this, rootPath);
         } catch (Exception e) {
             NLog.e(TAG, "No root directory selected.");
         }
